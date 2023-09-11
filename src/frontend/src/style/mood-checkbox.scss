@@ -1,0 +1,51 @@
+.mood-ckeckbox-wrapper{
+display: grid;
+grid-template-columns: 1fr 2fr;
+
+    .mood-checkbox-image-wrapper {
+        position: relative;
+        text-align: center;
+        cursor: pointer;
+        
+        //margin: 5px; // Image spacing
+    
+        img {
+        width: 70%;
+        height: auto;
+        transition: filter 0.1s ease; // Filter transition border-color 0.1s ease,
+        border: 10px solid transparent;
+        }
+    
+        &.selected {
+        img {
+            border: 5px solid $orange; // Border color changes on hover
+            filter: brightness(0.7); // Image gets darker on selection
+        }
+    
+        .text {
+            color: $orange; // Text color changes on selection
+            font-size: 50px;
+        }
+        }
+        &:hover {
+            img {
+            border: 5px solid lightgrey; // Cambia el color del borde de la imagen cuando se selecciona
+            }
+        
+            //.text {
+             //color: $dark-yellow; // Text color changes on hover
+             //font-size: 50px;
+            //}
+         }
+    
+        .text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);//center in X and Y
+        font-size: 40px;
+        color: white; 
+        }
+    }
+}
+  

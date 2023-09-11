@@ -1,0 +1,18 @@
+body {
+    margin:0px;
+    font-family: 'Belleza', sans-serif;
+    font-size: 20px;
+    color: $dark-grey;
+}
+.container {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+h2{
+    color: $orange;
+    font-weight: 400;
+}
+h3, h4{
+    font-weight: 200;
+}
+

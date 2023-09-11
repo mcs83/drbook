@@ -1,0 +1,31 @@
+.page-wrapper {
+    display: flex;
+    justify-content:space-between;
+    margin: 50px 100px;
+  
+  .page-text {
+    align-items: flex-start;
+    width:100%;
+  
+    .cart-item {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    margin-bottom: 30px;
+    width:100%;
+    
+        .cart-item-info {
+            align-items: center;
+            }
+        
+        .cart-item-image {
+            display: flex;
+            justify-content: center; /* centers horizontally */
+            align-items: center; /* centers vertically */
+            }
+        .cart-item-image img{
+            height: 200px;
+            }
+        }
+    }
+}

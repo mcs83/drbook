@@ -1,0 +1,18 @@
+.home-introduction-wrapper{
+  display:flex;
+  justify-content:space-around;
+  align-items: center;
+  margin:0px 100px;
+
+  .home-introduction-img img{
+    height: 300px;
+    margin:30px;
+  }
+  .home-introduction-text{
+    display:flex;
+    flex-direction: column;
+    justify-content:flex-start;
+  
+  }
+}
+

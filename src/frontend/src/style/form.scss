@@ -1,0 +1,14 @@
+.form-wrapper{
+    .form-wrapper-inputs{
+        input:focus {
+            border: 3px solid $orange; //no blue border
+            outline: none; //no blue shadow
+            background-color:$pink;
+            
+          }
+          .form-wrapper-input-email{
+                margin-right: 10px;
+          }
+    }
+}
+
