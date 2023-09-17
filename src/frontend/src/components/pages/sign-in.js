@@ -13,7 +13,11 @@ export default class SignIn extends Component {
     }
     handleSuccessfulSignIn(){
         this.props.handleSuccessfulLogin();
-        this.props.history.push("/"); //redirects
+        if (localStorage.length>1) {//if the shopping cart has some items. First item is webpack-dev-server
+            this.props.history.push("/shopping-cart"); //redirect to the cart
+        } else {
+            this.props.history.push("/"); //if not, redirect home
+        }
     }
     handleUnSuccessfulSignIn(){
         this.props.handleUnSuccessfulLogin();

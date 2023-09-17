@@ -20,6 +20,11 @@ import SignIn from './pages/sign-in';
 import NoMatch from './pages/no-match';
 import Library from './pages/library';
 import SignUp from './auth/signup';
+import Checkout from './pages/checkout';
+import SuccessfulPayment from './pages/successful-payment';
+import Orders from './pages/orders';
+
+
 
 library.add(faMinus, faPlus, faTrash, faSignInAlt, faSignOutAlt,faCopyright, faMarker,faStethoscope, faBook, faCartShopping, faChevronRight);//revisar todossss-trash
 
@@ -27,12 +32,15 @@ export default class App extends Component {
   constructor(props){
     super(props);
     this.state = {
-      loggedInStatus: "NOT_LOGGED_IN"
+      loggedInStatus: "NOT_LOGGED_IN",
     };
     this.handleSuccessfulLogin = this.handleSuccessfulLogin.bind(this);
     this.handleUnSuccessfulLogin = this.handleUnSuccessfulLogin.bind(this);
     this.handleSuccessfulLogout = this.handleSuccessfulLogout.bind(this);
+    this.authorizedRoutes = this.authorizedRoutes.bind(this);
+    this.checkLoginStatus = this.checkLoginStatus.bind(this);
     }
+
   handleSuccessfulLogin(){
     this.setState({
       loggedInStatus: "LOGGED_IN"
@@ -46,7 +54,9 @@ export default class App extends Component {
   handleSuccessfulLogout(){
     this.setState({
       loggedInStatus: "NOT_LOGGED_IN"
-    });
+    }); 
+    const cookieName = "session"; 
+    document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;SameSite=None; Secure`;
   }
   checkLoginStatus(){
    return axios
@@ -64,7 +74,8 @@ export default class App extends Component {
         // If not loggedIn status LOGGED_IN -> update state
       }else if (!loggedIn && loggedInStatus === "LOGGED_IN"){
         this.setState({ loggedInStatus: "NOT_LOGGED_IN"});
-      }
+      }console.log("loggedInresponse", loggedIn);
+      console.log("loggedInStatus", this.state.loggedInStatus);
     }).catch(error=>{
       console.log("Error", error);
     });
@@ -72,6 +83,12 @@ export default class App extends Component {
   
   componentDidMount(){
     this.checkLoginStatus();
+  }
+  authorizedRoutes(){
+    return[ //not to access in the navigation bar if the user is not logged in
+      <Route key={"successfulPaymentPage"} path="/successful-payment" component ={SuccessfulPayment}/>,
+      <Route key={"ordersPage"} path="/orders" component ={Orders}/>,
+      <Route key={"checkoutPage"} path="/checkout" component ={Checkout}/>];
   }
 
   render() {
@@ -86,16 +103,19 @@ export default class App extends Component {
             <Switch>
               <Route exact path="/" component ={Home}/>
               <Route path="/about-drbook" component ={About}/>
-              <Route exact path="/shopping-cart" component ={ShoppingCart}/>
-              <Route exact path="/library" component ={Library}/>
+              <Route path="/shopping-cart" render={(props) => (
+               <ShoppingCart loggedInStatus={this.state.loggedInStatus} //access loggedInStatus via props
+                      {...props}/>)}/>
+              <Route path="/library" component ={Library}/>
               <Route exact path="/sign-up" component ={SignUp}/>
-              <Route path="/sign-in" render={props=>(//access to the props
+              <Route path="/sign-in" render={(props)=>(//access to the props
                 <SignIn 
                   {...props} //overwrite and pass functions
                   handleSuccessfulLogin={this.handleSuccessfulLogin}
                   handleUnSuccessfulLogin={this.handleUnSuccessfulLogin}
                 />
               )}/>
+               {this.state.loggedInStatus === "LOGGED_IN" ? this.authorizedRoutes() : null}
               <Route component ={NoMatch}/> 
             </Switch>
           </div>

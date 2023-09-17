@@ -1,0 +1,16 @@
+.btn-small {
+    @include base-btn();
+    height: 32px;
+    font-size: 10px;
+    border-radius: 4px;
+    margin:10px;
+    padding: 0px 10px;
+}
+.btn-medium {
+    @include base-btn();
+    height: 32px;
+    font-size: 17px;
+    border-radius: 4px;
+    margin:5px;
+    padding: 0px 10px;
+}

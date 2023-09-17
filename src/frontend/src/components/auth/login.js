@@ -22,7 +22,7 @@ export default class Login extends Component {
         },
         { withCredentials: true }
         ).then(response =>{
-            if(response.data.message === 'Successful login'){
+            if(response.data.message === "Successful login"){
                 this.props.handleSuccessfulSignIn();
             }else{
                 this.setState({
@@ -30,7 +30,6 @@ export default class Login extends Component {
                    
                 }); 
                 this.props.handleUnSuccessfulSignIn();
-                //console.log("response",response);
                    
             }
         }).catch(error=>{
@@ -55,12 +54,14 @@ export default class Login extends Component {
             <div className='form-wrapper'>
                 <div>{this.state.errorText}</div>
                 <form className= 'form-wrapper-inputs' onSubmit={this.handleSubmit}>
+                    <label>Email: </label>
                     <input className= 'form-wrapper-input-email' type='email' 
                     name='email' 
                     placeholder='Your email' 
                     value={this.state.email} 
                     onChange={this.handleChange}/>
 
+                    <label>Password: </label>
                     <input className= 'form-wrapper-input-password'type='password'
                     name='password' 
                     placeholder='Your password' 

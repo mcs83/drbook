@@ -1,13 +1,16 @@
 .form-wrapper{
+    margin: 0px 0px;
     .form-wrapper-inputs{
+        input{
+            padding:10px 60px;
+            margin-bottom:10px;
+            display: block;
+            background:$grey;
+        }
         input:focus {
             border: 3px solid $orange; //no blue border
             outline: none; //no blue shadow
-            background-color:$pink;
             
-          }
-          .form-wrapper-input-email{
-                margin-right: 10px;
           }
     }
 }

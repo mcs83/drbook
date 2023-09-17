@@ -46,3 +46,10 @@
         color:white;
     }
 }
+
+@mixin base-list{
+    list-style-type: square;
+    ::marker {
+        color: $orange; /* Cambia el color de los bullets a rojo */
+      }
+}

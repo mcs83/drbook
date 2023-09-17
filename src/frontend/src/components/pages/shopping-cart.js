@@ -11,7 +11,7 @@ export default class ShoppingCart extends Component {
         this.state = {
             books: [], //books added to the shopping cart
             loading: false,
-            quantities: 0
+            quantities: {}
         };
         this.getShoppingCart = this.getShoppingCart.bind(this);
         this.removeFromCart = this.removeFromCart.bind(this);
@@ -21,6 +21,7 @@ export default class ShoppingCart extends Component {
 
     componentDidMount() {
         this.getShoppingCart();
+      
     }
     removeFromCart(id) {
         localStorage.removeItem(id);
@@ -54,7 +55,6 @@ export default class ShoppingCart extends Component {
                 allQuantities[bookId] = quantity;
             }
         }
-        console.log('todosloslibros', allQuantities);
         let queryString = ''; //initialize the query string
         //obtain the query string
         for (const bookId in allQuantities) {
@@ -65,7 +65,6 @@ export default class ShoppingCart extends Component {
             //add the book id to the query
             queryString += `id=${bookId}`;
         }
-        console.log("querystring", queryString);
         axios
             .get(`http://localhost:5000/books/request?${queryString}`)// example: http://localhost:5000/books/request?id=9&id=4
             .then(response => {
@@ -80,7 +79,8 @@ export default class ShoppingCart extends Component {
             });
     }
     render() {
-        const { books, quantities, loading } = this.state;
+        const { books, quantities, loading} = this.state;
+        const {loggedInStatus} = this.props;
 
         if (loading) {
             return <p>Loading...</p>;
@@ -89,12 +89,23 @@ export default class ShoppingCart extends Component {
         return (
             <div className='page-wrapper'>
                 <div className='page-text'>
-                    <h2>Voilà your shopping cart</h2>
-                    <h3>This is the beginning of a better stage in your life.</h3>
+                    <div className='page-introduction'>
+                        <div className='page-introduction-text'>
+                            <h2>Voilà your shopping cart</h2>
+                            <h3>This is the beginning of a better stage in your life. </h3>
+                            <h4>Remember to login when you want to proceed to checkout. You'll see a button here to buy your books.</h4>
+                        </div>
+                        <div className='page-introduction-button'>
+                            {loggedInStatus === "LOGGED_IN" ? //check if the user is logged in or not to show the Proceed to Checkout link
+                        <Link className="link" to={{pathname: '/checkout', 
+                        state: { books, quantities} //passes the data of the shopping cart in the sate of the link
+                        }}>PROCEED TO CHECKOUT</Link> : null}
+                        </div>
+                    </div>
                     {books.map((item, index) => (
                         <div className="cart-item" key={item.id}>
                             <div className="cart-item-info">
-                                <p>Title: {item.title}</p>
+                                <p>{item.title} <button className="btn-medium" onClick={() => this.removeFromCart(item.id)}><FontAwesomeIcon icon="trash" /> </button></p>
                                 <p>Author: {item.author}</p>
                                 <p>Price: ${item.price}</p>
                                 <p>
@@ -105,7 +116,6 @@ export default class ShoppingCart extends Component {
                                     <button className="btn-small" onClick={() => this.changeQuantity(item.id, quantities[item.id] + 1)}><FontAwesomeIcon icon="plus" style={{ fontSize: '10px'}}/>
                                      </button>
                                 </p>
-                                <button className="btn" onClick={() => this.removeFromCart(item.id)}><FontAwesomeIcon icon="trash" /> </button>
                             </div>
                             <div className="cart-item-image">
                                 <img src={bookCoverImagesUrlsArray[item.id - 1]} alt={item.title} />
