@@ -4,8 +4,8 @@ import axios from 'axios';
 import Book from './book';
 
 export default class LibraryBooks extends Component {
-    constructor(){
-        super();
+    constructor(props){
+        super(props);
         this.state ={
             isLoading: false,
             data:[] //initial state: no books
@@ -30,7 +30,7 @@ export default class LibraryBooks extends Component {
    showAllBooks(){
         return this.state.data.map(item => {//maps all the data with the props
             return <Book key={item.id} 
-            item = {item}/>;
+            item = {item} cartBooksCount={this.props.cartBooksCount}/>;//refresh the books added to cart and pass to app.js
         });
     }
    componentDidMount(){

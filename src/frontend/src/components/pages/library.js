@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import LibraryBooks from '../book-management/library-books';
 import libraryPicture from '../../../static/assets/images/pages/library.jpg';
 
-export default function() {
+export default function Library(props) {
 
     return (
         <div>
@@ -20,7 +20,7 @@ export default function() {
                     <img src={libraryPicture}/>
                 </div>
             </div>
-                <LibraryBooks/>
+                <LibraryBooks cartBooksCount={props.cartBooksCount}/>
         </div>
     );
 

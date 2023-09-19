@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, session, make_response
+from flask_login import UserMixin, login_user, logout_user, login_required, LoginManager, current_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_ , DateTime
 from sqlalchemy import JSON as JSON_SQLite
@@ -15,9 +16,16 @@ stripe.api_key = 'sk_test_51NppD6LqgY1TI3sm7eiAxVuM1w0CKpthi3Ta0W6HZhOqWEyyLLvd2
 app = Flask(__name__)
 app.config['SESSION_TYPE'] = 'filesystem' #saves session in the file sistem
 app.config['SECRET_KEY'] = 'secretkey' #to use session and get the cookies created
-app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # 'None' SameSite not applied for session cookies
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # 'None' SameSite not applied for session cookies
 app.config['SESSION_COOKIE_SECURE'] = True  # activates Secure for HTTPS
 Session(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'user_login'#endpoint
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.filter_by(id=user_id).first()
+
 
 # Configure CORS to allow connection from localhost:3000 and 4000
 CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://localhost:4000"], "supports_credentials": True}})
@@ -55,7 +63,7 @@ class BookSchema(ma.Schema): #schema
     class Meta:
         fields = ('id','title','author','year', 'pages', 'price', 'stripe_price', 'mood','description')
 
-class User(db.Model): #Table 2: User registration and login. Each use has this structure:
+class User(UserMixin, db.Model): #Table 2: User registration and login. Each use has this structure:
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
@@ -174,7 +182,7 @@ def get_books_by_ids():
 
 # Endpoint for creating a new User: Sign up
 @app.route('/signup', methods=['POST'])
-def signup_user():
+def user_signup():
     # code to validate and add user to database goes here
     email= request.json['email']
     password = request.json['password']
@@ -184,38 +192,48 @@ def signup_user():
     if user: # if a user is found
         return ("user already exists")
 
-    new_user = User(email, password)# else, the new user is going to be saved in the User database
+    new_user = User(email=email, password=password)# else, the new user is going to be saved in the User database
 
     db.session.add(new_user)  # add the new user to the database
     db.session.commit()#open connection and save
 
     return jsonify({"message": "Successful signup"})
-  
+
 #Endpoint for login an existing user in the database
-@app.route('/login', methods=['POST'])
-def login_user():
+@app.route('/login', methods=['POST', 'GET'])
+def user_login():
     #login data
     email= request.json['email']
     password = request.json['password']
 
     requested_user = User.query.filter_by(email=email).first()# check if the user actually exists
     requested_password = User.query.filter_by(password=password).first()# check if the password of the user is OK
-    if not (requested_user and requested_password): 
+    if current_user.is_authenticated:
+        return  jsonify({"authenticated": True, "user_id":current_user.id})
+    elif not (requested_user and requested_password): 
         return jsonify({"message": "Incorrect credentials"}), 401  # Non authorized
     else:
     # if the above check passes, then we know the user has the right credentials
-     session['user_id'] = requested_user.id #creates the session
-     return jsonify({"message": "Successful login"})
+        login_user(requested_user)
+     #session['user_id'] = requested_user.id #creates the session
+        return jsonify({"message": "Successful login"})
     
 #Endpoint to logout an user    
 @app.route('/logout', methods=['POST'])
-def logout_user():
+#@login_required #first it makes a GET request to know if previously logged in
+def user_logout():
+    logout_user()
+    #response = make_response(jsonify({"message": "Successful logout"}))
+    return jsonify({"message": "Successful logout"})
+    #if 'user_id' in session:
     # Erases the session of the current user
-    session.pop('user_id', None)
-    session.clear()
-    response = make_response(jsonify({"message": "Successful logout"}))
-    response.set_cookie('session', expires=0)
-    return response
+        #session.pop('user_id', None)
+        #session.clear()
+        #response = make_response(jsonify({"message": "Successful logout"}))
+        #response.set_cookie('session', '', expires=0) # Clear the session cookie
+       # return response
+    #else:
+        #return jsonify({"message":"User is not authenticated"}),401
 
 #Endpoint to query all users
 @app.route('/users', methods=['GET'])
@@ -227,13 +245,19 @@ def get_all_users():
 #Endpoint to check if the user is authenticated
 @app.route('/check-auth', methods=['GET'])
 def check_auth():
-    if 'user_id' in session:
-        # user is authenticated, it returns the information
-        user_id = session['user_id']
-        return jsonify({"authenticated": True, "user_id":user_id})
+    if current_user.is_authenticated:
+        # El usuario está autenticado, realiza acciones apropiadas
+        return jsonify({"authenticated": True, "user_id":current_user.id})
     else:
-        # user not authenticated
+        # El usuario no está autenticado, realiza acciones apropiadas
         return jsonify({"authenticated": False})
+    #if 'user_id' in session:
+        # user is authenticated, it returns the information
+        #user_id = session['user_id']
+        #return jsonify({"authenticated": True, "user_id":user_id})
+    #else:
+        # user not authenticated
+        #return jsonify({"authenticated": False})
     
 # Endpoint for deleting a user in the User database
 @app.route('/users/<id>', methods=["DELETE"])

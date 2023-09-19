@@ -124,19 +124,19 @@ render(){
   return (
     <div className='page-wrapper'>
         <div className='page-text'>
-            <h2>Checkout</h2> <div>
-            <h3>Summary of your order:</h3>
-            <ul>
-                {this.state.books.map((book, index) => (
-                <li key={book.id}>
-                    <span>Book {index+1}: "{book.title}"</span>
-                    <span> x {this.state.quantities[book.id]}</span> = $ {book.price * this.state.quantities[book.id]}
-                </li>
-                ))} 
-                 <h4>Shipping: $ {this.state.shippingPrice}</h4>
-                 <h3>Total: $ {this.state.totalAmount}</h3>
-            </ul>
-            
+            <h2>Checkout</h2> 
+            <div>
+              <h3>Summary of your order:</h3>
+              <ul>
+                  {this.state.books.map((book, index) => (
+                  <li key={book.id}>
+                      <span>Book {index+1}: "{book.title}"</span>
+                      <span> x {this.state.quantities[book.id]}</span> = $ {book.price * this.state.quantities[book.id]}
+                  </li>
+                  ))} 
+                  <h4>Shipping: $ {this.state.shippingPrice}</h4>
+                  <h3>Total: $ {this.state.totalAmount}</h3>
+              </ul>
             </div>
             <div className='form-wrapper'>
                 <div>{this.state.errorText}</div>

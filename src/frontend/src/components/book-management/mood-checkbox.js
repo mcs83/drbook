@@ -11,8 +11,8 @@ import emotionalPicture from "../../../static/assets/images/moods/emotional.png"
 import anxiousPicture from "../../../static/assets/images/moods/anxious.png"
 
 export default class MoodCheckbox extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = { //initial state of the checkbox
       angry: false, //moods and if they are checked or not
       frustrated: false,
@@ -29,11 +29,11 @@ export default class MoodCheckbox extends Component {
 
   showSelectedBooks() {//shows the selected books on the screen
     if (this.state.data.length == 0) {
-      return <h3>Don't be shy. Just try the most typical moods you feel and take a look to the suggested book pills!</h3> // Message to display when no mood is selected
+      return <p>Don't be shy. Just try the most typical moods you feel and take a look to the suggested book pills!</p> // Message to display when no mood is selected
     }
     return this.state.data.map(item => {//maps all the data with the props
       return <Book key={item.id}
-        item={item} />;
+        item={item} cartBooksCount={this.props.cartBooksCount}/>;
     });
   }
 
@@ -67,7 +67,7 @@ export default class MoodCheckbox extends Component {
       [itemName]: !prevState[itemName]
     }),
       //stores the requested mood name and if it is checked or not
-      () => {//call this way to send the current state to gelSelectedBooks, not the previous state
+      () => {//call this way to send the current state to getSelectedBooks, not the previous state
         this.getSelectedBooks(); //calls this function only when one mood is checked
       });
   }

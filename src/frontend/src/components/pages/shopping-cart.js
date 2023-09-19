@@ -20,12 +20,15 @@ export default class ShoppingCart extends Component {
     }
 
     componentDidMount() {
-        this.getShoppingCart();
+        this.getShoppingCart();//call to the API
+        this.props.cartBooksCount();//update cart quantities to app.js ->show in the navigation container
       
     }
+    
     removeFromCart(id) {
         localStorage.removeItem(id);
         this.getShoppingCart();//refresh
+        this.props.cartBooksCount();//update cart quantities to app.js ->show in the navigation container
     }
     
     changeQuantity(id, quantity) {
@@ -36,6 +39,7 @@ export default class ShoppingCart extends Component {
             localStorage.setItem(id, quantity);
         }
         this.getShoppingCart();//refresh
+        this.props.cartBooksCount();//update cart quantities to app.js ->show in the navigation container
 
     }
     getShoppingCart() { //get the selected books from API, according to the selected book in the shopping cart 

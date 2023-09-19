@@ -1,13 +1,13 @@
-.web-item-wrapper{
+.book-wrapper{
     display: grid;
     grid-template-columns: 1fr 2fr;
     margin:20px;
 
-    .web-item-text{
+    .book-text{
         display: grid;
         grid-template-columns: 1fr 1fr;
 
-        .web-item-text-column-left{
+        .book-text-column-left{
 
             .title{
                 text-transform: uppercase;
@@ -20,7 +20,7 @@
             }
         }
 
-        .web-item-text-column-right{
+        .book-text-column-right{
             padding-left: 30px;
             .price{
                 color: black;
@@ -29,13 +29,13 @@
             }
         }
     }
-    .web-item-img{
+    .book-img{
         display: flex;
         justify-content: center;
         align-items: center;
 
     }
-    .web-item-img img{
+    .book-img img{
         height: 350px;
         padding-right:20px; //for horizontal books to fit better
     }

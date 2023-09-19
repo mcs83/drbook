@@ -1,0 +1,186 @@
+@media screen and (max-width: 1024px) {
+    
+    //Navigation bar
+    .nav-wrapper {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        .nav-logo{
+            order:1;
+            height:120px;
+             img{
+                 width: 120px; 
+             }
+         }
+        .nav-items {
+            order:3;
+            position:absolute;
+            top:200px; //the navbar has 140px of height
+            left:0px;
+            display:flex;
+            flex-direction: column;
+            align-items:flex-start;
+            padding:10px 30px;
+            width:100vw; //100% viewport
+            transform: translateX(-100%); //hide the menu
+            transition: 0.3s ease all;
+            background:$pink;
+            opacity: 0.95;
+            a{
+                color: black;
+                text-decoration: none;
+                margin: 15px;
+                &:hover {
+                    color:$dark-pink;
+                    border-radius: 0px;
+                    background-color: transparent;
+                    }
+            }
+        }
+
+         .nav-items.open{
+            transform:translateX(0); //visualize when it's open
+            }
+        
+        .nav-toggle{
+            order:2;
+            display:flex;
+            flex-direction:column;
+            margin:15px;}
+
+        .nav-toggle span{
+                width: 30px;
+                height:4px;
+                background-color: black;
+                margin-bottom:5px;
+                border-radius:2px;
+                transform-origin: 5px 0px;
+                transition: all 0.2s linear;
+            }
+        .nav-toggle.open > span:nth-child(1){ //visualize X instead of the hamburger menu
+            transform: rotate(45deg) translate(0px,0px);
+        }
+        .nav-toggle.open > span:nth-child(2){
+            display:none;
+        }
+        .nav-toggle.open > span:nth-child(3){
+           transform: rotate(-45deg) translate(-5px,1px);
+        }
+    }
+
+ //Pages
+ .page-wrapper{
+    flex-direction:column;
+    //height:100%;
+    margin: 0px;
+    .page-img img{
+      order:1;
+      width:100%;
+      margin-left: 0px;
+      margin-top:0px;
+      object-fit: cover; //the image does not stretch
+      object-position: bottom;
+    }
+    .page-text{
+      order:2;
+      margin-top:20px;
+      width: 100%;
+
+      .page-introduction{
+        grid-template-columns: 1fr;
+        margin-bottom: 30px;
+    
+        .page-introduction-button{
+          width: 100%;  
+        }
+        .page-introduction-text{
+          align-items: center;
+          width:100%;
+        }
+      }
+       //Forms
+        .form-wrapper{
+            width:100%;
+            .form-wrapper-inputs{
+                input{
+                    padding:20px 10px;
+                    box-sizing: border-box; //includes the width of the border in the total witdh
+                    width:100%;
+                    font-size: 1em;
+                }
+                label {
+                    font-size: 1.2em; 
+                 }
+            }
+        }
+      
+    }
+  }
+
+  //Buttons
+  .btn{
+    width: 100%;
+    font-size: 1.2em;
+  }
+  .btn-medium{
+    font-size: 1.2em;
+    height: 40px;
+    padding: 0px 20px;
+  }
+  .btn-small{
+    font-size: 1.2em;
+    height: 40px;
+    padding: 0px 15px;
+
+  }
+  //Links
+  .link{
+    width:100%;
+    padding: 20px 0px;
+    font-size: 1.2em;
+  }
+
+  //Books
+  .book-wrapper{
+    grid-template-columns: 1fr;
+    margin:0px;
+    padding: 20px;
+
+    .book-text{
+        grid-template-columns: 1fr;
+        margin: 20px;
+
+        .book-text-column-left{
+            width: 100%;
+            .title{
+                font-size: 1.3em;
+            }  
+            .description{
+                font-size:0.9em;
+                padding:0px;
+            }
+        }
+        .book-text-column-right{
+            padding-left: 0px;
+            width: 100%;
+            .price{
+                color: black;
+                font-size: 1.5em;
+                margin-bottom:5px;
+            }
+        }
+    }
+    .book-img img{
+        height: 300px;
+        padding-right:0px; 
+    }
+}
+}
+  
+  
+ 
+    
+
+
+  

@@ -1,12 +1,5 @@
 .page-wrapper {
-    display: flex;
-    justify-content:space-between;
-    margin: 50px 100px;
-  
   .page-text {
-    align-items: flex-start;
-    width:100%;
-  
     .cart-item {
     display: grid;
     grid-template-columns: 1fr 1fr;

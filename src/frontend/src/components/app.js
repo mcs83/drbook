@@ -6,8 +6,6 @@ import{
   Switch,
   Route
 }from 'react-router-dom';
-
-
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus, faTrash, faSignInAlt, faSignOutAlt, faCopyright, faMarker, faStethoscope, faBook, faCartShopping, faChevronRight } from "@fortawesome/free-solid-svg-icons";
@@ -24,21 +22,21 @@ import Checkout from './pages/checkout';
 import SuccessfulPayment from './pages/successful-payment';
 import Orders from './pages/orders';
 
-
-
-library.add(faMinus, faPlus, faTrash, faSignInAlt, faSignOutAlt,faCopyright, faMarker,faStethoscope, faBook, faCartShopping, faChevronRight);//revisar todossss-trash
+library.add(faMinus, faPlus, faTrash, faSignInAlt, faSignOutAlt,faCopyright, faMarker,faStethoscope, faBook, faCartShopping, faChevronRight);
 
 export default class App extends Component {
   constructor(props){
     super(props);
     this.state = {
       loggedInStatus: "NOT_LOGGED_IN",
+      cartQuantitiesCount: 0
     };
     this.handleSuccessfulLogin = this.handleSuccessfulLogin.bind(this);
     this.handleUnSuccessfulLogin = this.handleUnSuccessfulLogin.bind(this);
     this.handleSuccessfulLogout = this.handleSuccessfulLogout.bind(this);
     this.authorizedRoutes = this.authorizedRoutes.bind(this);
     this.checkLoginStatus = this.checkLoginStatus.bind(this);
+    this.cartBooksCount = this.cartBooksCount.bind(this);
     }
 
   handleSuccessfulLogin(){
@@ -80,10 +78,34 @@ export default class App extends Component {
       console.log("Error", error);
     });
   }
+  cartBooksCount = () => {
+    const allQuantities = {};
+    let sumQuantity = 0;
+
+    // Loop through localStorage to calculate total quantity
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+
+      if (!isNaN(key)) {
+        const bookId = parseInt(key, 10);
+        const quantity = JSON.parse(localStorage.getItem(key));
+
+        allQuantities[bookId] = quantity;
+        sumQuantity += quantity;
+      }
+    }
+
+    // Update cartItemCount in the state
+    this.setState({
+      cartQuantitiesCount: sumQuantity
+    });
+  }
   
   componentDidMount(){
     this.checkLoginStatus();
+    this.cartBooksCount();
   }
+
   authorizedRoutes(){
     return[ //not to access in the navigation bar if the user is not logged in
       <Route key={"successfulPaymentPage"} path="/successful-payment" component ={SuccessfulPayment}/>,
@@ -99,14 +121,21 @@ export default class App extends Component {
             <NavigationContainer 
               loggedInStatus={this.state.loggedInStatus}
               handleSuccessfulLogout={this.handleSuccessfulLogout}
+              cartQuantitiesCount={this.state.cartQuantitiesCount}
             />
             <Switch>
-              <Route exact path="/" component ={Home}/>
+              <Route exact path="/" render={(props) => (
+               <Home 
+               cartBooksCount={this.cartBooksCount} //access cartBooksCount function via props
+                      {...props}/>)}/>
               <Route path="/about-drbook" component ={About}/>
               <Route path="/shopping-cart" render={(props) => (
-               <ShoppingCart loggedInStatus={this.state.loggedInStatus} //access loggedInStatus via props
+               <ShoppingCart loggedInStatus={this.state.loggedInStatus}
+               cartBooksCount={this.cartBooksCount} //access loggedInStatus and function via props
                       {...props}/>)}/>
-              <Route path="/library" component ={Library}/>
+              <Route path="/library" render={(props) => (
+                <Library cartBooksCount={this.cartBooksCount} //access cartBooksCount function via props
+                {...props}/>)}/>
               <Route exact path="/sign-up" component ={SignUp}/>
               <Route path="/sign-in" render={(props)=>(//access to the props
                 <SignIn 
@@ -120,7 +149,7 @@ export default class App extends Component {
             </Switch>
           </div>
         </Router>
-        <div className='footer'>Thanks for visiting DrBook on {moment().format("MMM Do YYYY")} - Copyright Dr. Book Inc. <FontAwesomeIcon icon = "copyright" style={{color: "#f56241",}}/> </div>
+        <div className='footer'>Thanks for visiting DrBook on {moment().format("MMM Do YYYY")} - Copyright Dr. Book Inc. <FontAwesomeIcon icon = "copyright" style={{color: "#f56241",}}/> </div>   
       </div>
     );
   }
