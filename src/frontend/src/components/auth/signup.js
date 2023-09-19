@@ -56,16 +56,18 @@ export default class SignUp extends Component {
                     <div className='form-wrapper'>
                         <div>{this.state.errorText}</div>
                         <form className= 'form-wrapper-inputs' onSubmit={this.handleSubmitSignUp}>
-                                <label>Email: </label>
+                                <label for='email-info'>Email: </label>
                                 <input type='email' 
                                 name='email' 
+                                id='email-info'
                                 placeholder='Your email' 
                                 value={this.state.email} 
                                 onChange={this.handleChangeSignUp}/>
 
-                                <label>Password: </label>
+                                <label for='password-info'>Password: </label>
                                 <input type='password'
                                 name='password' 
+                                id='password-info'
                                 placeholder='Your password' 
                                 value={this.state.password} 
                                 onChange={this.handleChangeSignUp}/>

@@ -29,7 +29,7 @@ export default class MoodCheckbox extends Component {
 
   showSelectedBooks() {//shows the selected books on the screen
     if (this.state.data.length == 0) {
-      return <p>Don't be shy. Just try the most typical moods you feel and take a look to the suggested book pills!</p> // Message to display when no mood is selected
+      return <p style={{ margin: '40px' }}>Don't be shy. Just try the most typical moods you feel and take a look hear to your suggested book pills!</p> // Message to display when no mood is selected
     }
     return this.state.data.map(item => {//maps all the data with the props
       return <Book key={item.id}
@@ -77,8 +77,8 @@ export default class MoodCheckbox extends Component {
     const { angry, emotional, sad, frustrated, overwhelmed, anxious } = this.state;
 
     return (
-      <div className='mood-ckeckbox-wrapper'>
-        <div>
+      <div>
+        <div className='mood-ckeckbox-wrapper'>
           <div className={`mood-checkbox-image-wrapper ${angry ? 'selected' : ''}`}//if it is selected, the scss &.selected gets activated
             onClick={() => this.handleItemClick('angry')} >
             <img src={angryPicture} />

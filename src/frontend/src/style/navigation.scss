@@ -3,7 +3,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px 40px;
-    background-color: white;
+    background-color: $light-yellow;
     cursor: pointer;
 
     .nav-logo{
@@ -12,7 +12,7 @@
             width: 140px; 
         }
         &:hover {
-        opacity: 0.6;
+            filter: brightness(0.9);
         }
     }
     .nav-items{
@@ -28,7 +28,7 @@
                 color:$orange;
                 text-transform: uppercase;
                 border-radius: 8px;
-                background-color: $grey;
+                background-color: white;
                 padding: 10px;
                 }
         }

@@ -147,35 +147,52 @@
     margin:0px;
     padding: 20px;
 
-    .book-text{
-        grid-template-columns: 1fr;
-        margin: 20px;
+        .book-text{
+            grid-template-columns: 1fr;
+            margin: 20px;
 
-        .book-text-column-left{
-            width: 100%;
-            .title{
-                font-size: 1.3em;
-            }  
-            .description{
-                font-size:0.9em;
-                padding:0px;
+            .book-text-column-left{
+                width: 100%;
+                .title{
+                    font-size: 1.3em;
+                }  
+                .description{
+                    font-size:0.9em;
+                    padding:0px;
+                }
+            }
+            .book-text-column-right{
+                padding-left: 0px;
+                width: 100%;
+                .price{
+                    color: black;
+                    font-size: 1.5em;
+                    margin-bottom:5px;
+                }
             }
         }
-        .book-text-column-right{
-            padding-left: 0px;
-            width: 100%;
-            .price{
-                color: black;
-                font-size: 1.5em;
-                margin-bottom:5px;
-            }
+        .book-img img{
+            height: 300px;
+            padding-right:0px; 
         }
     }
-    .book-img img{
-        height: 300px;
-        padding-right:0px; 
-    }
-}
+    //Mood selector of the home page
+    .mood-ckeckbox-wrapper{
+        grid-template-columns: 1fr 1fr;
+            .mood-checkbox-image-wrapper {
+                .text {
+                    font-size: 1.1em;
+                }
+                &.selected {
+                    .text {
+                        color: $orange; // Text color changes on selection
+                        font-size: 1.2em;
+                    }
+                }
+           
+            }
+        }
+          
 }
   
   

@@ -54,16 +54,18 @@ export default class Login extends Component {
             <div className='form-wrapper'>
                 <div>{this.state.errorText}</div>
                 <form className= 'form-wrapper-inputs' onSubmit={this.handleSubmit}>
-                    <label>Email: </label>
+                    <label for='email-info'>Email: </label>
                     <input className= 'form-wrapper-input-email' type='email' 
                     name='email' 
+                    id='email-info'
                     placeholder='Your email' 
                     value={this.state.email} 
                     onChange={this.handleChange}/>
 
-                    <label>Password: </label>
+                    <label for='password-info'>Password: </label>
                     <input className= 'form-wrapper-input-password'type='password'
                     name='password' 
+                    id='password-info'
                     placeholder='Your password' 
                     value={this.state.password} 
                     onChange={this.handleChange}/>

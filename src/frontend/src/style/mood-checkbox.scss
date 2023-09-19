@@ -1,22 +1,21 @@
 .mood-ckeckbox-wrapper{
-display: flex;
+display: grid;
+grid-template-columns: 1fr 1fr 1fr;
 justify-content: space-evenly;
 align-items: center;
 flex-direction: row;
-//grid-template-columns: 1fr 2fr;
 
     .mood-checkbox-image-wrapper {
         position: relative;
         text-align: center;
         cursor: pointer;
-        
-        //margin: 5px; // Image spacing
+
         .text {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);//center in X and Y
-            font-size: 1.3em;
+            font-size: 2em;
             color: white; 
         }
     
@@ -25,31 +24,25 @@ flex-direction: row;
             height: auto;
             transition: filter 0.1s ease; // Filter transition border-color 0.1s ease,
             border: 10px solid transparent;
+            filter: brightness(0.9); // darker filter
         }
     
         &.selected {
             img {
                 border: 5px solid $orange; // Border color changes on hover
-                filter: brightness(0.7); // Image gets darker on selection
+                filter: brightness(1.1);// Image gets brighter on selection
             }
         
             .text {
                 color: $orange; // Text color changes on selection
-                font-size: 1.4em;
+                font-size: 2.1em;
             }
         }
         &:hover {
             img {
-            border: 5px solid lightgrey; // Cambia el color del borde de la imagen cuando se selecciona
+            border: 5px solid $pink; //When hovers, the border changes
             }
-        
-            //.text {
-             //color: $dark-yellow; // Text color changes on hover
-             //font-size: 50px;
-            //}
          }
-    
-   
     }
 }
   

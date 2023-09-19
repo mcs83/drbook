@@ -141,33 +141,37 @@ render(){
             <div className='form-wrapper'>
                 <div>{this.state.errorText}</div>
                 <form className= 'form-wrapper-inputs' onSubmit={(event) => this.submitOrder(event, this.state.books, this.state.quantities)}>
-                    <label>Name and surname: </label>
+                    <label for='full-name'>Name and surname: </label>
                     <input type='text' 
                     name='fullName' 
+                    id='full-name'
                     placeholder='Your full name' 
                     value={this.state.fullName} 
                     onChange={this.handleChange}
                     required/>
 
-                    <label>Address: </label>
+                    <label for='address-info'>Address: </label>
                     <input type='text' 
                     name='address' 
+                    id='address-info'
                     placeholder='Your address' 
                     value={this.state.address} 
                     onChange={this.handleChange}
                     required/>
 
-                     <label>City: </label>
+                    <label for='city-info'>City: </label>
                     <input type='text' 
                     name='city' 
+                    id='city-info'
                     placeholder='Your city' 
                     value={this.state.city} 
                     onChange={this.handleChange}
                     required/>
 
-                    <label>Postal code: </label>
+                    <label for='postal-code'>Postal code: </label>
                     <input type='text' 
                     name='postalCode' 
+                    id='postal-code'
                     placeholder='P.C.' 
                     value={this.state.postalCode} 
                     onChange={this.handleChange}
