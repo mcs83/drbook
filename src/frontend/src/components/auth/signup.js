@@ -17,23 +17,22 @@ export default class SignUp extends Component {
 
     handleSubmitSignUp(event){
         axios
-        .post("http://localhost:5000/signup", //adds a new user and redirects the user to the login page
+        .post('http://localhost:5000/signup', //adds a new user and redirects the user to the login page
             {   email: this.state.email,
                 password: this.state.password
             },
             { withCredentials: true }
         ).then(response =>{
             if(response.data.message === 'Successful signup'){
-                this.props.history.push("/sign-in"); //redirects to login page
+                this.props.history.push('/login'); //redirects to login page
             }else{
                 this.setState({
-                    errorText:"Wrong email or password"
-                    
+                    errorText:'Wrong email syntax or the user already exists!'  
                 }); 
             }
         }).catch(error=>{
             this.setState({
-                errorText:"An error ocurred"
+                errorText:'An error ocurred!'
             }); 
         });
 
@@ -53,10 +52,10 @@ export default class SignUp extends Component {
                 <div className='page-text'>
                     <h2>Sign up</h2>
                     <h3>After registering with your email and password, you will be automatically redirected to the login page.</h3>
+                    <p style={{color:'#ff6341', fontSize:'1.2em'}}>{this.state.errorText}</p>
                     <div className='form-wrapper'>
-                        <div>{this.state.errorText}</div>
                         <form className= 'form-wrapper-inputs' onSubmit={this.handleSubmitSignUp}>
-                                <label for='email-info'>Email: </label>
+                                <label htmlFor='email-info'>Email: </label>
                                 <input type='email' 
                                 name='email' 
                                 id='email-info'
@@ -64,7 +63,7 @@ export default class SignUp extends Component {
                                 value={this.state.email} 
                                 onChange={this.handleChangeSignUp}/>
 
-                                <label for='password-info'>Password: </label>
+                                <label htmlFor='password-info'>Password: </label>
                                 <input type='password'
                                 name='password' 
                                 id='password-info'

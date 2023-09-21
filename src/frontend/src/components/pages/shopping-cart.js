@@ -84,7 +84,7 @@ export default class ShoppingCart extends Component {
     }
     render() {
         const { books, quantities, loading} = this.state;
-        const {loggedInStatus} = this.props;
+        const {token} = this.props;
 
         if (loading) {
             return <p>Loading...</p>;
@@ -100,7 +100,7 @@ export default class ShoppingCart extends Component {
                             <h4>Remember to login when you want to proceed to checkout. You'll see a button here to buy your books.</h4>
                         </div>
                         <div className='page-introduction-button'>
-                            {loggedInStatus === "LOGGED_IN" ? //check if the user is logged in or not to show the Proceed to Checkout link
+                            {!(!token && token!=="" && token!== undefined) ? //check if the user is logged in or not to show the Proceed to Checkout link
                         <Link className="link" to={{pathname: '/checkout', 
                         state: { books, quantities} //passes the data of the shopping cart in the sate of the link
                         }}>PROCEED TO CHECKOUT</Link> : null}

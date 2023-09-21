@@ -24,14 +24,13 @@ export default class Checkout extends Component {//for integration with Stripe p
         this.clearData = this.clearData.bind(this);
         this.sendOrderData = this.sendOrderData.bind(this);
     }
+  
     componentDidMount() {
         // Fetches the content of the shopping cart from the location sate when pressing the button
         const { location } = this.props; //obtains the location
         if (location && location.state) {
          const { books, quantities } = location.state;
           this.setState({ books, quantities },() =>{//now the shopping cart items are loaded
-          console.log("books",books);
-          console.log("quantities",quantities);
           this.calculateTotalAmount(books, quantities);//calculates the total price of the order
           });
         }
@@ -51,9 +50,8 @@ export default class Checkout extends Component {//for integration with Stripe p
     submitOrder = (event) => { 
         event.preventDefault(); //not to refresh the page
         const lineItems = []; //prepare data for creating a Stripe buy link: Stripeprice ID and quantity
-        const { books, quantities, fullName, address, city, postalCode, totalAmount } = this.state; 
-        books.forEach((book) => {
-            const bookQuantity = quantities[book.id];
+        this.state.books.forEach((book) => {
+            const bookQuantity = this.state.quantities[book.id];
             lineItems.push({
               price: book.stripe_price,
               quantity: bookQuantity,
@@ -63,12 +61,13 @@ export default class Checkout extends Component {//for integration with Stripe p
           
         const order = { line_items: lineItems };
         console.log(order);
+
       axios
         .post("http://localhost:5000/checkout", order)
         .then(response => {
           const responseUrl = response.data; // answer of Stripe
           console.log(responseUrl);
-          window.location.href = responseUrl;//sends teh uer to the Stripe link
+          window.location.href = responseUrl;//sends the url to the Stripe link
           this.sendOrderData();//stores it in the Order table of API the user order
         })
         .catch(error => {
@@ -77,8 +76,7 @@ export default class Checkout extends Component {//for integration with Stripe p
     }
 
     sendOrderData(){  
-      const { books, quantities, fullName, address, city, postalCode, totalAmount } = this.state;
-
+      //const { books, quantities, fullName, address, city, postalCode, totalAmount } = this.state;
       axios
       .post("http://localhost:5000/order", 
       {
@@ -89,8 +87,12 @@ export default class Checkout extends Component {//for integration with Stripe p
           postal_code: postalCode,
           total_price: totalAmount
         },
-          { withCredentials: true }) 
-      .then(response => {
+        {
+          headers: {
+          Authorization: 'Bearer ' + props.token
+        }
+      }
+      ).then(response => {
           console.log("response", response);
           this.clearData();//Erase data after a successful order
      
@@ -111,7 +113,20 @@ export default class Checkout extends Component {//for integration with Stripe p
       city: "",
       postalCode: ""
   };
-      localStorage.clear(); //empty the shopping cart, kept in the localstorage
+ 
+    //empty the shopping cart, kept in the localstorage but not the authorization token
+
+    for (var key in localStorage){
+      console.log(key)
+      if (key !== 'token') {
+        localStorage.removeItem(key);
+      }
+   }
+  // localStorage.setItem('data', JSON.stringify(newData));
+
+    //let tokenData = localStorage.filter(item => item.id !== 'token')
+    //console.log("newData",newData);
+    //setProducts(newData)
     }
 
   handleChange(event){  
@@ -141,7 +156,7 @@ render(){
             <div className='form-wrapper'>
                 <div>{this.state.errorText}</div>
                 <form className= 'form-wrapper-inputs' onSubmit={(event) => this.submitOrder(event, this.state.books, this.state.quantities)}>
-                    <label for='full-name'>Name and surname: </label>
+                    <label htmlFor='full-name'>Name and surname: </label>
                     <input type='text' 
                     name='fullName' 
                     id='full-name'
@@ -150,7 +165,7 @@ render(){
                     onChange={this.handleChange}
                     required/>
 
-                    <label for='address-info'>Address: </label>
+                    <label htmlFor='address-info'>Address: </label>
                     <input type='text' 
                     name='address' 
                     id='address-info'
@@ -159,7 +174,7 @@ render(){
                     onChange={this.handleChange}
                     required/>
 
-                    <label for='city-info'>City: </label>
+                    <label htmlFor='city-info'>City: </label>
                     <input type='text' 
                     name='city' 
                     id='city-info'
@@ -168,7 +183,7 @@ render(){
                     onChange={this.handleChange}
                     required/>
 
-                    <label for='postal-code'>Postal code: </label>
+                    <label htmlFor='postal-code'>Postal code: </label>
                     <input type='text' 
                     name='postalCode' 
                     id='postal-code'
@@ -182,13 +197,13 @@ render(){
                     </div>
                 </form> 
             </div>
-    </div>
-    <div className='page-img'>
-            <img src={checkoutPicture}/>
-        </div>
+         </div>
+      <div className='page-img'>
+        <img src={checkoutPicture}/>
+      </div>
     </div>
     );
-}
+  }
 }
 
 

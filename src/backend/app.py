@@ -1,5 +1,6 @@
+#-------------------------------------------------------------------IMPORTS---------------------------------------------------------------------------------------
+import json
 from flask import Flask, request, jsonify, session, make_response
-from flask_login import UserMixin, login_user, logout_user, login_required, LoginManager, current_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_ , DateTime
 from sqlalchemy import JSON as JSON_SQLite
@@ -7,29 +8,27 @@ from flask_marshmallow import Marshmallow
 from flask_session import Session #to do the logout and erase all the cookies
 from flask_migrate import Migrate
 from flask_cors import CORS
-from datetime import datetime  #Work with dates
+from datetime import datetime, timedelta, timezone #Work with dates
+from flask_jwt_extended import create_access_token,get_jwt,get_jwt_identity,unset_jwt_cookies, jwt_required, JWTManager
 import os
 import stripe
 
-stripe.api_key = 'sk_test_51NppD6LqgY1TI3sm7eiAxVuM1w0CKpthi3Ta0W6HZhOqWEyyLLvd2GK6FIhqg0DuSMKkCze79mc6AJCO4B0SXTBC00ZxA2fUDi'#secret key
+stripe.api_key = 'sk_test_51NppD6LqgY1TI3sm7eiAxVuM1w0CKpthi3Ta0W6HZhOqWEyyLLvd2GK6FIhqg0DuSMKkCze79mc6AJCO4B0SXTBC00ZxA2fUDi'#secret key of DrBooks Stripe account
 
+#-------------------------------------------------------------------CONFIGURATION-----------------------------------------------------------------------------------
 app = Flask(__name__)
 app.config['SESSION_TYPE'] = 'filesystem' #saves session in the file sistem
-app.config['SECRET_KEY'] = 'secretkey' #to use session and get the cookies created
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # 'None' SameSite not applied for session cookies
+app.config['JWT_SECRET_KEY'] = 'secretkey' #to use session and get the cookies created
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1) #lifespan of the authentication token
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # 'None' SameSite not applied for session cookies
 app.config['SESSION_COOKIE_SECURE'] = True  # activates Secure for HTTPS
 Session(app)
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'user_login'#endpoint
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.filter_by(id=user_id).first()
-
+jwt = JWTManager(app)
 
 # Configure CORS to allow connection from localhost:3000 and 4000
 CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://localhost:4000"], "supports_credentials": True}})
 
+#------------------------------------------------------------------------DATABASES-----------------------------------------------------------------------------------
 #SQLlite database creation
 basedir = os.path.abspath(os.path.dirname(__file__)) #app base directory
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+os.path.join(basedir, 'app.sqlite')
@@ -37,7 +36,8 @@ db = SQLAlchemy(app)
 ma = Marshmallow(app)
 migrate = Migrate(app, db)
 
-#Creation of the schema for the database table 1
+#------------------------------Creation of he database table 1: BOOKS IN DrBook
+
 class Book(db.Model): #Table 1: Books, each book has this structure:
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), unique=False)
@@ -63,7 +63,9 @@ class BookSchema(ma.Schema): #schema
     class Meta:
         fields = ('id','title','author','year', 'pages', 'price', 'stripe_price', 'mood','description')
 
-class User(UserMixin, db.Model): #Table 2: User registration and login. Each use has this structure:
+ #------------------------------Creation of the database table 2: USERS IN DrBook       
+
+class User(db.Model): #Table 2: User registration and login. Each use has this structure:
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
@@ -75,6 +77,8 @@ class User(UserMixin, db.Model): #Table 2: User registration and login. Each use
 class UserSchema(ma.Schema): #schema
     class Meta:
         fields = ('id','email','password')
+
+ #------------------------------Creation of the database table 3: ORDERS of books IN DrBook    
 
 class Order(db.Model): #Table 3: Orders
     id = db.Column(db.Integer, primary_key=True)
@@ -101,12 +105,18 @@ class OrderSchema(ma.Schema): #schema
     class Meta:
         fields = ('id','user_id','quantity','date', 'full_name', 'address', 'city','postal_code', 'total_price')
 
+#------------------------------Creation of the schemas for the 3 databases
+
 book_schema = BookSchema()
 books_schema = BookSchema(many=True)
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
 order_schema = OrderSchema()
 orders_schema = OrderSchema(many=True)
+
+#-------------------------------------------------------------------ENDPOINTS-----------------------------------------------------------------------------------
+
+#------------------------------Endpoints for BOOKS
 
 #Endpoint to create a new book
 @app.route('/book', methods=['POST'])
@@ -153,7 +163,6 @@ def modify_book(id):
     db.session.commit()#open connection and save
     return book_schema.jsonify(book)
     
-
 #Endpoint for querying multiple or unique moods in all books
 @app.route('/select', methods=['GET']) #exaple: /select?mood=sad&mood=overwhelmed (must contain sad or overwhelmed)
 def select_mood_books():
@@ -180,60 +189,72 @@ def get_books_by_ids():
     result = books_schema.dump(books)#obtain all the requested books
     return jsonify({'books': result})
 
+#------------------------------Endpoints for USERS
+
+#------------------------------Authentication
+
+#Token refresh if the user is still logged in
+@app.after_request
+def refresh_expiring_jwts(response):
+    try:
+        exp_timestamp = get_jwt()["exp"]
+        now = datetime.now(timezone.utc)
+        target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
+        if target_timestamp > exp_timestamp:
+            access_token = create_access_token(identity=get_jwt_identity())
+            data = response.get_json()
+            if type(data) is dict:
+                data["access_token"] = access_token 
+                response.data = json.dumps(data)
+        return response
+    except (RuntimeError, KeyError):
+        # Case where there is not a valid JWT. Just return the original respone
+        return response
+    
+#Endpoint for authentication via token JWT
+@app.route('/token', methods=["POST"])
+def create_token():
+    email = request.json.get("email", None)
+    password = request.json.get("password", None)
+    #email= request.json['email']
+    #password = request.json['password']
+    requested_email = User.query.filter_by(email=email).first()# check if the user actually exists
+    requested_password = User.query.filter_by(password=password).first()# check if the password of the user is OK
+
+    if not (requested_email and requested_password) :
+        return {"msg": "Wrong email or password"}, 401 #unauthorized error
+
+    access_token = create_access_token(identity=email)
+    response = {"access_token":access_token} #if the user is in the database, it returns the access token
+    return response
+
+#Endpoint for logout
+@app.route("/logout", methods=["POST"])
+def logout():
+    response = jsonify({"msg": "logout successful"})
+    unset_jwt_cookies(response) #deletes the JWT token
+    return response
+
+#------------------------------User table management (not authentication)
+
 # Endpoint for creating a new User: Sign up
 @app.route('/signup', methods=['POST'])
-def user_signup():
-    # code to validate and add user to database goes here
+def signup_user():
+    # code to validate and add user:
     email= request.json['email']
     password = request.json['password']
 
     user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
 
     if user: # if a user is found
-        return ("user already exists")
+        return jsonify({"message": "User already exists"})
 
     new_user = User(email=email, password=password)# else, the new user is going to be saved in the User database
 
     db.session.add(new_user)  # add the new user to the database
     db.session.commit()#open connection and save
-
-    return jsonify({"message": "Successful signup"})
-
-#Endpoint for login an existing user in the database
-@app.route('/login', methods=['POST', 'GET'])
-def user_login():
-    #login data
-    email= request.json['email']
-    password = request.json['password']
-
-    requested_user = User.query.filter_by(email=email).first()# check if the user actually exists
-    requested_password = User.query.filter_by(password=password).first()# check if the password of the user is OK
-    if current_user.is_authenticated:
-        return  jsonify({"authenticated": True, "user_id":current_user.id})
-    elif not (requested_user and requested_password): 
-        return jsonify({"message": "Incorrect credentials"}), 401  # Non authorized
-    else:
-    # if the above check passes, then we know the user has the right credentials
-        login_user(requested_user)
-     #session['user_id'] = requested_user.id #creates the session
-        return jsonify({"message": "Successful login"})
     
-#Endpoint to logout an user    
-@app.route('/logout', methods=['POST'])
-#@login_required #first it makes a GET request to know if previously logged in
-def user_logout():
-    logout_user()
-    #response = make_response(jsonify({"message": "Successful logout"}))
-    return jsonify({"message": "Successful logout"})
-    #if 'user_id' in session:
-    # Erases the session of the current user
-        #session.pop('user_id', None)
-        #session.clear()
-        #response = make_response(jsonify({"message": "Successful logout"}))
-        #response.set_cookie('session', '', expires=0) # Clear the session cookie
-       # return response
-    #else:
-        #return jsonify({"message":"User is not authenticated"}),401
+    return jsonify({"message": "Successful signup"})
 
 #Endpoint to query all users
 @app.route('/users', methods=['GET'])
@@ -242,23 +263,6 @@ def get_all_users():
     users = users_schema.dump(all_users)
     return jsonify(users)
 
-#Endpoint to check if the user is authenticated
-@app.route('/check-auth', methods=['GET'])
-def check_auth():
-    if current_user.is_authenticated:
-        # El usuario está autenticado, realiza acciones apropiadas
-        return jsonify({"authenticated": True, "user_id":current_user.id})
-    else:
-        # El usuario no está autenticado, realiza acciones apropiadas
-        return jsonify({"authenticated": False})
-    #if 'user_id' in session:
-        # user is authenticated, it returns the information
-        #user_id = session['user_id']
-        #return jsonify({"authenticated": True, "user_id":user_id})
-    #else:
-        # user not authenticated
-        #return jsonify({"authenticated": False})
-    
 # Endpoint for deleting a user in the User database
 @app.route('/users/<id>', methods=["DELETE"])
 def delete_user(id):
@@ -268,9 +272,12 @@ def delete_user(id):
 
     return user_schema.jsonify(user)
 
+#------------------------------Endpoints for ORDERS
+
 #Endpoint to store an order
-@app.route('/order', methods=['POST'])
+@app.route('/order', methods=['POST'])#no vaaaaaaaaaa
 def add_order():
+    @jwt_required()
     user_id = session['user_id']
     quantity = request.json['quantity']
     date = datetime.now()
@@ -296,7 +303,7 @@ def order_delete(id):
     db.session.commit()
     return order_schema.jsonify(order)
 
-#Endpoint for querying all the orders of the authenticated user
+#Endpoint for querying all the orders of the authenticated user no vaaaaaaaaaaaaaa!!!!!!!!!!!!!!!!!
 @app.route('/orders/history', methods=['GET'])
 def get_orders_history():
     all_orders = Order.query.filter_by(user_id = session['user_id'])
@@ -310,7 +317,7 @@ def get_orders_history():
         all_books.extend(books) #extends the list
     return jsonify({"orders": orders, "books": all_books})
 
-#Endpoint for crerating the Stripe payment link
+#Endpoint for creating the Stripe payment link
 @app.route('/checkout', methods=['POST'])
 def create_stripe_payment_link():
   try:
@@ -330,6 +337,7 @@ def create_stripe_payment_link():
   except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+#------------------------------
 
 if __name__ == '__main__':
     app.run(debug=True)
