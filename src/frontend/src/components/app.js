@@ -29,17 +29,20 @@ export default class App extends Component {
   constructor(props){
     super(props);
     this.state = {
-      cartQuantitiesCount: 0
+      cartQuantitiesCount: 0, //number of books in the cart
+      books: [], //books in the cart
+      quantities: {} //book id-s and their corresponding quantities in the cart
     };
     this.authorizedRoutes = this.authorizedRoutes.bind(this);
     this.cartBooksCount = this.cartBooksCount.bind(this);
-    }
+    this.getCheckoutBooksApp = this.getCheckoutBooksApp.bind(this);
+  }
 
   cartBooksCount = () => {
     const allQuantities = {};
     let sumQuantity = 0;
 
-    // Loop through localStorage to calculate total quantity
+    // Loop through localStorage numeric keys to calculate total quantity
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
 
@@ -54,7 +57,7 @@ export default class App extends Component {
 
     // Update cartItemCount in the state
     this.setState({
-      cartQuantitiesCount: sumQuantity
+      cartQuantitiesCount: sumQuantity,
     });
   }
   
@@ -62,14 +65,31 @@ export default class App extends Component {
     this.cartBooksCount();
   }
 
-  authorizedRoutes(){
-    return[ //not to access in the navigation bar if the user is not logged in
-      <Route key={"successfulPaymentPage"} path="/successful-payment" component ={SuccessfulPayment}/>,
-      <Route key={"ordersPage"} path="/orders" component ={Orders}/>,
-      <Route key={"checkoutPage"} path="/checkout" render={(props)=>(
+  authorizedRoutes(token){
+    return[ //not to access via the navigation bar if the user is not logged in
+      <Route key={"successfulPaymentPage"} path="/successful-payment" render={(props) => (
+        <SuccessfulPayment
+        token={token} 
+        {...props}/>
+      )}/>,
+      <Route key={"checkoutPage"} path="/checkout" render={(props) => (
         <Checkout
-          token={token}   
-          {...props}/>   )}/>];
+        token={token}
+        books={this.state.books}
+        quantities={this.state.quantities}
+        {...props}/>
+      )}/>,
+      <Route key={"ordersPage"} path="/orders" render={(props) => (
+        <Orders
+        token={token}
+        {...props}/>
+      )}/>];
+  }
+  getCheckoutBooksApp(books, quantities){
+    this.setState({
+      books: books,
+      quantities: quantities
+    }); console.log(books);console.log(quantities);
   }
 
   render() {
@@ -94,7 +114,8 @@ export default class App extends Component {
                 <Route path="/shopping-cart" render={(props) => (
                   <ShoppingCart 
                     token={token}
-                    cartBooksCount={this.cartBooksCount} //access loggedInStatus and function via props
+                    cartBooksCount={this.cartBooksCount} 
+                    getCheckoutBooksApp={this.getCheckoutBooksApp}//access function via props
                   {...props}/>
                 )}/>
                 <Route path="/library" render={(props) => (
@@ -107,14 +128,14 @@ export default class App extends Component {
                   <Login 
                     setToken={setToken}
                     token={token}    
-                    {...props}/>//overwrite and pass functions/>
+                    {...props}/>
                 )}/> 
                 <Route path="/logout" render={(props)=>(//access to the props
                   <Logout
                     removeToken={removeToken}   
-                    {...props}/>//overwrite and pass functions/>
+                    {...props}/>
                 )}/> 
-                {!token && token!=="" && token!== undefined? null:this.authorizedRoutes()}
+                {!token && token!=="" && token!== undefined? null: (this.authorizedRoutes(token))}
                 <Route component ={NoMatch}/> 
               </Switch>
            </Router>

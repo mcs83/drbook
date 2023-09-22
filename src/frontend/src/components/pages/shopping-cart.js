@@ -77,11 +77,13 @@ export default class ShoppingCart extends Component {
                     quantities: allQuantities,//storages quantities in the state
                     loading: false
                 });
+                this.props.getCheckoutBooksApp(response.data.books, allQuantities);//update the shopping cart to check it out
             })
             .catch(error => {
                 console.log(error);
             });
     }
+      
     render() {
         const { books, quantities, loading} = this.state;
         const {token} = this.props;
@@ -97,13 +99,14 @@ export default class ShoppingCart extends Component {
                         <div className='page-introduction-text'>
                             <h2>Voilà your shopping cart</h2>
                             <h3>This is the beginning of a better stage in your life. </h3>
-                            <h4>Remember to login when you want to proceed to checkout. You'll see a button here to buy your books.</h4>
+                            
                         </div>
                         <div className='page-introduction-button'>
                             {!(!token && token!=="" && token!== undefined) ? //check if the user is logged in or not to show the Proceed to Checkout link
-                        <Link className="link" to={{pathname: '/checkout', 
-                        state: { books, quantities} //passes the data of the shopping cart in the sate of the link
-                        }}>PROCEED TO CHECKOUT</Link> : null}
+                            <Link className="link" to={{pathname: '/checkout', 
+                            state: { books, quantities, token}//passes the data of the shopping cart in the state of the link
+                            }}>PROCEED TO CHECKOUT</Link> 
+                            : <h4>Remember to login when you want to proceed to checkout. You'll see a button here to buy your books.</h4>}
                         </div>
                     </div>
                     {books.map((item, index) => (

@@ -29,7 +29,7 @@ export default class MoodCheckbox extends Component {
 
   showSelectedBooks() {//shows the selected books on the screen
     if (this.state.data.length == 0) {
-      return <p style={{ margin: '40px' }}>Don't be shy. Just try the most typical moods you feel and take a look hear to your suggested book pills!</p> // Message to display when no mood is selected
+      return <p style={{ margin: '40px' }}>Don't be shy. Just try the most typical moods you feel and take a look here to your suggested book pills!</p> // Message to display when no mood is selected
     }
     return this.state.data.map(item => {//maps all the data with the props
       return <Book key={item.id}

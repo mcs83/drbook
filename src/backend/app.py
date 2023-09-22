@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------IMPORTS---------------------------------------------------------------------------------------
 import json
-from flask import Flask, request, jsonify, session, make_response
+from flask import Flask, request, jsonify, session, make_response, redirect
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_ , DateTime
 from sqlalchemy import JSON as JSON_SQLite
@@ -275,10 +275,10 @@ def delete_user(id):
 #------------------------------Endpoints for ORDERS
 
 #Endpoint to store an order
-@app.route('/order', methods=['POST'])#no vaaaaaaaaaa
+@app.route('/order', methods=['POST'])
+@jwt_required() #protected route: only authenticated users
 def add_order():
-    @jwt_required()
-    user_id = session['user_id']
+    user_id = (User.query.filter_by(email=get_jwt_identity()).first()).id # Filter DB by token (email)
     quantity = request.json['quantity']
     date = datetime.now()
     full_name = request.json['full_name']
@@ -292,7 +292,7 @@ def add_order():
     db.session.add(new_order)
     db.session.commit()#open connection and save
 
-    order = db.session.get(Order, new_order.id) #to return the new book created id
+    order = db.session.get(Order, new_order.id) #to return the new order created id
     return order_schema.jsonify(order)
 
 # Endpoint for deleting a order
@@ -303,10 +303,11 @@ def order_delete(id):
     db.session.commit()
     return order_schema.jsonify(order)
 
-#Endpoint for querying all the orders of the authenticated user no vaaaaaaaaaaaaaa!!!!!!!!!!!!!!!!!
+#Endpoint for querying all the orders of the authenticated user
 @app.route('/orders/history', methods=['GET'])
+@jwt_required() #protected route: only authenticated users
 def get_orders_history():
-    all_orders = Order.query.filter_by(user_id = session['user_id'])
+    all_orders = Order.query.filter_by(user_id=(User.query.filter_by(email=get_jwt_identity()).first()).id) # Filter DB by token (email)
     orders = orders_schema.dump(all_orders)
     all_books = [] #new list for the selected books
    # See all the orders and obtain all the associated books
@@ -328,7 +329,7 @@ def create_stripe_payment_link():
             payment_link = stripe.PaymentLink.create(
                 line_items = data['line_items'], 
                 shipping_options =[{"shipping_rate": 'shr_1NqAwdLqgY1TI3sm7mcKdTHP'}],#flat rate: 5$
-                after_completion={"type": "redirect", "redirect": {"url": "http://localhost:3000/successful-payment"}},
+                after_completion={"type": "redirect", "redirect": {"url": "http://localhost:3000/successful-payment"}},#after payment, that page is loaded
             )
             return payment_link.url, 200
         else:

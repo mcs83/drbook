@@ -17,25 +17,35 @@ export default class Orders extends Component {
     componentDidMount() {
         this.requestOrdersHistory();
     }
+    
     displayDate(date) {
         const dateTime = new Date(date);
         const datePart = dateTime.toLocaleDateString();//day info
         const timePart = dateTime.toLocaleTimeString(); //hours info
         return `${datePart} ${timePart}`;
-    }
-    
+    } 
+   
     requestOrdersHistory(){  
-        axios
-        .get("http://localhost:5000/orders/history", { withCredentials: true })
-        .then(response => {
+        axios({
+            method: "GET",
+            url:"http://localhost:5000/orders/history",
+            headers: { //authentication information must be sent like this for JWT token aknowledgement
+              Authorization: 'Bearer ' + this.props.token
+            } 
+          }) 
+          .then((response) => {
+            const res =response.data
             this.setState({
                 orders: response.data.orders, // the API responds with two arrays of objects
                 books: response.data.books
             })
-        })
-        .catch(error => {
-            console.log(error);
-        });
+          }).catch((error) => {
+            if (error.response) {
+              console.log(error.response)
+              console.log(error.response.status)
+              console.log(error.response.headers)
+            }
+          })
     }
 
 render(){

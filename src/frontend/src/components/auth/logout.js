@@ -22,7 +22,7 @@ function Logout(props) {
     })}
 
     return(
-      //{logMeOut}
+
      <a onClick={logOut}>Log out <FontAwesomeIcon icon = "sign-out-alt"/></a>
     )
 }

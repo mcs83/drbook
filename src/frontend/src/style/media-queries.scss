@@ -182,12 +182,12 @@
         grid-template-columns: 1fr 1fr;
             .mood-checkbox-image-wrapper {
                 .text {
-                    font-size: 1.1em;
+                    font-size: 1.4em;
                 }
                 &.selected {
                     .text {
                         color: $orange; // Text color changes on selection
-                        font-size: 1.2em;
+                        font-size: 1.5em;
                     }
                 }
            

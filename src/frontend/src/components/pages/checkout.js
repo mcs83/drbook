@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { Link, withRouter } from "react-router-dom";
 
 import checkoutPicture from '../../../static/assets/images/pages/shopping-cart.jpg';
 
@@ -16,7 +15,8 @@ export default class Checkout extends Component {//for integration with Stripe p
             address: "",
             city: "",
             postalCode: "",
-            shippingPrice: 5 //flat rate 5$
+            shippingPrice: 5, //flat rate 5$
+            token:""
         };
         this.handleChange = this.handleChange.bind(this);
         this.submitOrder = this.submitOrder.bind(this);
@@ -29,8 +29,8 @@ export default class Checkout extends Component {//for integration with Stripe p
         // Fetches the content of the shopping cart from the location sate when pressing the button
         const { location } = this.props; //obtains the location
         if (location && location.state) {
-         const { books, quantities } = location.state;
-          this.setState({ books, quantities },() =>{//now the shopping cart items are loaded
+         const { books, quantities, token } = location.state;
+          this.setState({ books, quantities, token },() =>{//now the shopping cart items and the token are loaded
           this.calculateTotalAmount(books, quantities);//calculates the total price of the order
           });
         }
@@ -60,15 +60,13 @@ export default class Checkout extends Component {//for integration with Stripe p
           });
           
         const order = { line_items: lineItems };
-        console.log(order);
 
-      axios
+        axios
         .post("http://localhost:5000/checkout", order)
         .then(response => {
           const responseUrl = response.data; // answer of Stripe
-          console.log(responseUrl);
-          window.location.href = responseUrl;//sends the url to the Stripe link
-          this.sendOrderData();//stores it in the Order table of API the user order
+          window.location.href = responseUrl; //redirects to the Stripe link
+          this.sendOrderData(); //stores the order data in the API
         })
         .catch(error => {
           console.log(error);
@@ -76,35 +74,40 @@ export default class Checkout extends Component {//for integration with Stripe p
     }
 
     sendOrderData(){  
-      //const { books, quantities, fullName, address, city, postalCode, totalAmount } = this.state;
-      axios
-      .post("http://localhost:5000/order", 
-      {
-          quantity: quantities,
-          full_name: fullName,
-          address: address,
-          city: city,
-          postal_code: postalCode,
-          total_price: totalAmount
-        },
-        {
-          headers: {
-          Authorization: 'Bearer ' + props.token
-        }
+      const { books, quantities, fullName, address, city, postalCode, totalAmount, token } = this.state;
+
+      const orderData= {
+        quantity: quantities,
+        full_name: fullName,
+        address: address,
+        city: city,
+        postal_code: postalCode,
+        total_price: totalAmount
       }
-      ).then(response => {
-          console.log("response", response);
-          this.clearData();//Erase data after a successful order
-     
-      })
-      .catch(error => {
-        console.log(error);
-      });
-    }
+  
+        axios({
+          method: "POST",
+          url:"http://localhost:5000/order",
+          headers: { //authentication information must be sent like this for JWT token aknowledgement
+            Authorization: 'Bearer ' + token
+          }, data: orderData
+        })
+        .then((response) => {
+          const res =response.data
+          console.log("orderresponse",res);
+          this.clearData(); //when the order is saved in the DB Orders, clears the local storage except for the token
+        }).catch((error) => {
+          if (error.response) {
+            console.log(error.response)
+            console.log(error.response.status)
+            console.log(error.response.headers)
+          }
+        })
+  }
   
    clearData(){
-    this.state = {
-      books: [],//books added to the shopping cart
+    this.setState = {
+      books: [],
       quantities:{},
       totalAmount: 0,
       errorText:"",
@@ -112,22 +115,18 @@ export default class Checkout extends Component {//for integration with Stripe p
       address: "",
       city: "",
       postalCode: ""
-  };
- 
-    //empty the shopping cart, kept in the localstorage but not the authorization token
-
-    for (var key in localStorage){
-      console.log(key)
-      if (key !== 'token') {
+    };
+    //empty the shopping cart that was kept in the local storage but don't erase the authorization token
+    console.log("estoy en el for casi");
+    for (let key in localStorage){
+      if (key === 'token') {
+        localStorage.getItem(key);
+        console.log("estoy en el if de no borrar");
+      }else{   
         localStorage.removeItem(key);
       }
-   }
-  // localStorage.setItem('data', JSON.stringify(newData));
-
-    //let tokenData = localStorage.filter(item => item.id !== 'token')
-    //console.log("newData",newData);
-    //setProducts(newData)
-    }
+    } console.log("he salido del for");
+  }
 
   handleChange(event){  
     this.setState({
