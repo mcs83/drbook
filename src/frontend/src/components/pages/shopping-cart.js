@@ -4,6 +4,7 @@ import axios from 'axios';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import bookCoverImagesUrlsArray from "../book-management/book-cover-images-urls";
+import Checkout from '../shop/checkout';
 
 export default class ShoppingCart extends Component {
     constructor(props) {
@@ -11,18 +12,16 @@ export default class ShoppingCart extends Component {
         this.state = {
             books: [], //books added to the shopping cart
             loading: false,
-            quantities: {}
+            quantities: {},
         };
         this.getShoppingCart = this.getShoppingCart.bind(this);
         this.removeFromCart = this.removeFromCart.bind(this);
         this.changeQuantity = this.changeQuantity.bind(this);
-
     }
 
     componentDidMount() {
         this.getShoppingCart();//call to the API
         this.props.cartBooksCount();//update cart quantities to app.js ->show in the navigation container
-      
     }
     
     removeFromCart(id) {
@@ -58,6 +57,7 @@ export default class ShoppingCart extends Component {
                 // add the book and the quantity to the object
                 allQuantities[bookId] = quantity;
             }
+            
         }
         let queryString = ''; //initialize the query string
         //obtain the query string
@@ -77,7 +77,7 @@ export default class ShoppingCart extends Component {
                     quantities: allQuantities,//storages quantities in the state
                     loading: false
                 });
-                this.props.getCheckoutBooksApp(response.data.books, allQuantities);//update the shopping cart to check it out
+      
             })
             .catch(error => {
                 console.log(error);
@@ -99,37 +99,46 @@ export default class ShoppingCart extends Component {
                         <div className='page-introduction-text'>
                             <h2>Voilà your shopping cart</h2>
                             <h3>This is the beginning of a better stage in your life. </h3>
-                            
                         </div>
+
                         <div className='page-introduction-button'>
-                            {!(!token && token!=="" && token!== undefined) ? //check if the user is logged in or not to show the Proceed to Checkout link
-                            <Link className="link" to={{pathname: '/checkout', 
-                            state: { books, quantities, token}//passes the data of the shopping cart in the state of the link
-                            }}>PROCEED TO CHECKOUT</Link> 
-                            : <h4>Remember to login when you want to proceed to checkout. You'll see a button here to buy your books.</h4>}
+                        
+                            {!(!token && token!=="" && token!== undefined) ? 
+                           null
+                            : <h4>Remember to login when you want to proceed to checkout. You'll see a form here to buy your books.</h4>}
+                        </div>
+                      
+                    </div>
+                    <div className='page-body'>
+                        <div>
+                            {books.map((item, index) => (
+                                <div className="cart-item" key={item.id}>
+                                    <div className="cart-item-info">
+                                        <h3><FontAwesomeIcon icon = "book" style={{color: "#e8c6c6"}}/> {item.title}</h3>
+                                        <button className="btn-medium" onClick={() => this.removeFromCart(item.id)}><FontAwesomeIcon icon="trash" /></button>
+                                        <p>Author: {item.author}</p>
+                                        <p>Price: ${item.price}</p>
+                                        <button className="btn-small" onClick={() => this.changeQuantity(item.id, quantities[item.id] - 1)}><FontAwesomeIcon icon="minus" style={{ fontSize: '10px'}}/>
+                                        </button>
+                                        {quantities[item.id]}
+                                        <button className="btn-small" onClick={() => this.changeQuantity(item.id, quantities[item.id] + 1)}><FontAwesomeIcon icon="plus" style={{ fontSize: '10px'}}/>
+                                        </button>
+                                    </div>
+                                    <div className="cart-item-image">
+                                        <img src={bookCoverImagesUrlsArray[item.id - 1]} alt={item.title} />
+                                    </div>
+                                </div>
+                            ))}
+                            <div>
+                                <Link className='link' to="/">Return to Home Page </Link>
+                            </div>
+                        </div>
+                        <div>
+                            {!(!token && token!=="" && token!== undefined) ? 
+                                <Checkout books={this.state.books} quantities={this.state.quantities} token={this.props.token}/>
+                                    : null}
                         </div>
                     </div>
-                    {books.map((item, index) => (
-                        <div className="cart-item" key={item.id}>
-                            <div className="cart-item-info">
-                                <p>{item.title} <button className="btn-medium" onClick={() => this.removeFromCart(item.id)}><FontAwesomeIcon icon="trash" /> </button></p>
-                                <p>Author: {item.author}</p>
-                                <p>Price: ${item.price}</p>
-                                <p>
-                                    Quantity: 
-                                    <button className="btn-small" onClick={() => this.changeQuantity(item.id, quantities[item.id] - 1)}><FontAwesomeIcon icon="minus" style={{ fontSize: '10px'}}/>
-                                    </button>
-                                    {quantities[item.id]}
-                                    <button className="btn-small" onClick={() => this.changeQuantity(item.id, quantities[item.id] + 1)}><FontAwesomeIcon icon="plus" style={{ fontSize: '10px'}}/>
-                                     </button>
-                                </p>
-                            </div>
-                            <div className="cart-item-image">
-                                <img src={bookCoverImagesUrlsArray[item.id - 1]} alt={item.title} />
-                            </div>
-                        </div>
-                    ))}
-                    <Link className='link' to="/">Return to Home Page </Link>
                 </div>
             </div>
         );

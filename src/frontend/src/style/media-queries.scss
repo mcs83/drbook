@@ -102,7 +102,8 @@
       }
        //Forms
         .form-wrapper{
-            width:100%;
+            margin-top: 50px;
+            width: 100%;
             .form-wrapper-inputs{
                 input{
                     padding:20px 10px;
@@ -115,7 +116,12 @@
                  }
             }
         }
-      
+        //Shopping cart page
+        .page-body{ 
+            grid-template-columns: 1fr;
+            justify-content: center;
+            width: 100%;
+          }
     }
   }
 
@@ -145,7 +151,7 @@
   //Books
   .book-wrapper{
     grid-template-columns: 1fr;
-    margin:0px;
+    margin: 0px;
     padding: 20px;
 
         .book-text{
