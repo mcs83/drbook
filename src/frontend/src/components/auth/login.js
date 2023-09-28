@@ -17,7 +17,7 @@ function Login(props) {
 
     function logIn(event) {
       axios
-      .post("http://localhost:5000/token",
+      .post("https://mcs83.pythonanywhere.com/token",
         {
           email: loginForm.email,
           password: loginForm.password
@@ -25,7 +25,7 @@ function Login(props) {
       )
       .then((response) => {
         props.setToken(response.data.access_token)//comes from app.js via props
-        if (localStorage.length>2) {//if the shopping cart has some items. First item is webpack-dev-server
+        if (localStorage.length>1) {//if the shopping cart has some items
           history.push("/shopping-cart"); //redirect to the cart
         } else {
           history.push("/"); //if not, redirect home

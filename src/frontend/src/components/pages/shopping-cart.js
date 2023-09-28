@@ -70,7 +70,7 @@ export default class ShoppingCart extends Component {
             queryString += `id=${bookId}`;
         }
         axios
-            .get(`http://localhost:5000/books/request?${queryString}`)// example: http://localhost:5000/books/request?id=9&id=4
+            .get(`https://mcs83.pythonanywhere.com/books/request?${queryString}`)// example: http://localhost:5000/books/request?id=9&id=4
             .then(response => {
                 this.setState({
                     books: response.data.books,
@@ -99,15 +99,17 @@ export default class ShoppingCart extends Component {
                         <div className='page-introduction-text'>
                             <h2>Voilà your shopping cart</h2>
                             <h3>This is the beginning of a better stage in your life. </h3>
-                        </div>
-
-                        <div className='page-introduction-button'>
-                        
                             {!(!token && token!=="" && token!== undefined) ? 
                            null
                             : <h4>Remember to login when you want to proceed to checkout. You'll see a form here to buy your books.</h4>}
                         </div>
-                      
+
+                        <div className='page-introduction-button'>
+                        {!(!token && token!=="" && token!== undefined) ? 
+                           null
+                            :   <Link className='link' to="/login">I want log in or sign in</Link>}
+                        </div> 
+                       
                     </div>
                     <div className='page-body'>
                         <div>
@@ -129,9 +131,6 @@ export default class ShoppingCart extends Component {
                                     </div>
                                 </div>
                             ))}
-                            <div>
-                                <Link className='link' to="/">Return to Home Page </Link>
-                            </div>
                         </div>
                         <div>
                             {!(!token && token!=="" && token!== undefined) ? 

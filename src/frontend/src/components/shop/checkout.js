@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import jwt from 'jsonwebtoken';
 
 export default class Checkout extends Component {//for integration with Stripe payments
     constructor(props){
@@ -21,21 +22,22 @@ export default class Checkout extends Component {//for integration with Stripe p
         this.calculateTotalAmount = this.calculateTotalAmount.bind(this);
         this.clearData = this.clearData.bind(this);
         this.sendOrderData = this.sendOrderData.bind(this);
+
     }
   
     componentDidMount() {
-        //Fetches the content of the shopping cart
+        //fetches the content of the shopping cart
        const { books, quantities, token } = this.props;
-       this.setState({ books, quantities, token })//Now the shopping cart items and the token are loaded
-       this.calculateTotalAmount(books, quantities);//Calculates the total price of the order
+       this.setState({ books, quantities, token })//now the shopping cart items and the token are loaded
+       this.calculateTotalAmount(books, quantities);//calculates the total price of the order
     }
 
     componentDidUpdate(prevProps) {
-        //Compares new and previous props
+        //compares new and previous props
         if (prevProps.books !== this.props.books || prevProps.quantities !== this.props.quantities || prevProps.token !== this.props.token) {
           const { books, quantities, token } = this.props;
       
-          //Updates the state with the new props
+          //updates the state with the new props
           this.setState({ books, quantities, token });
 
           this.calculateTotalAmount(books, quantities);
@@ -43,19 +45,18 @@ export default class Checkout extends Component {//for integration with Stripe p
       }
        
     calculateTotalAmount = (books, quantities) => {
-        //Calculates the total amount to pay 
+        //calculates the total amount to pay 
         let totalPrice = 0;
         books.forEach((book) => {
             const quantity = quantities[book.id];
             totalPrice += book.price * quantity;
         });
         this.setState({
-            totalAmount: Number((totalPrice + this.state.shippingPrice).toFixed(2)) //Keeps track of the total amount in the state with 2 decimals
+            totalAmount: Number((totalPrice + this.state.shippingPrice).toFixed(2)) //keeps track of the total amount in the state with 2 decimals
         }); 
     }   
         
-    submitOrder = (event) => { 
-        event.preventDefault(); //not to refresh the page
+    submitOrder(orderId){ //order id goes to the url os successful-payment page when the user pays, so that order status changes to completed
         const lineItems = []; //prepare data for creating a Stripe buy link: Stripeprice ID and quantity
         this.state.books.forEach((book) => {
             const bookQuantity = this.state.quantities[book.id];
@@ -67,13 +68,17 @@ export default class Checkout extends Component {//for integration with Stripe p
           });
           
         const order = { line_items: lineItems };
-
-        axios
-        .post("http://localhost:5000/checkout", order)
+      
+        axios({
+          method: "POST",
+          url:"https://mcs83.pythonanywhere.com/checkout",
+          data: {order, orderId}
+        }) 
         .then(response => {
-          const responseUrl = response.data; //Answer of Stripe
-          window.location.href = responseUrl; //Redirects to the Stripe link
-          this.sendOrderData(); //Stores the order data in the API
+          const responseUrl = response.data; //answer of Stripe
+          window.location.href = responseUrl; //redirects to the Stripe link
+          this.clearData();
+        
         })
         .catch(error => {
           console.log(error);
@@ -82,43 +87,52 @@ export default class Checkout extends Component {//for integration with Stripe p
           }); 
         });
     }
-
-    sendOrderData(){  
-      const { books, quantities, fullName, address, city, postalCode, totalAmount, token } = this.state;
-
+    
+  
+     //stores a the order with draft status 
+    sendOrderData = (event) => { 
+      event.preventDefault(); //not to refresh the page
+      const { quantities, fullName, address, city, postalCode, totalAmount, token } = this.state;
       const orderData= {
         quantity: quantities,
         full_name: fullName,
         address: address,
         city: city,
         postal_code: postalCode,
-        total_price: totalAmount
+        total_price: totalAmount,
+        status: "draft"
+      }
+      const decodedToken = jwt.decode(token);//decodes the token to access the expiration date
+     
+      if(decodedToken && decodedToken.exp * 1000 < Date.now()){ //if the token has expired
+        this.setState({
+          errorText:'Your session has expired. Please log out and then log in again.'
+        });
+      }else{
+            axios({
+              method: "POST",
+              url:"https://mcs83.pythonanywhere.com/order",
+              headers: { //authentication information must be sent like this for JWT token aknowledgement
+                Authorization: 'Bearer ' + token
+              }, data: orderData
+            })
+            .then((response) => {
+              this.submitOrder(response.data.id); 
+            }).catch((error) => {
+              if (error.response) {
+                console.log(error.response)
+                console.log(error.response.status)
+                console.log(error.response.headers)
+                  this.setState({
+                    errorText:'An error occurred saving your data!'
+                }); 
+              }
+            })
+          }
       }
   
-        axios({
-          method: "POST",
-          url:"http://localhost:5000/order",
-          headers: { //authentication information must be sent like this for JWT token aknowledgement
-            Authorization: 'Bearer ' + token
-          }, data: orderData
-        })
-        .then((response) => {
-          const res =response.data
-          this.clearData(); //when the order is saved in the DB Orders, clears the local storage except for the token
-        }).catch((error) => {
-          if (error.response) {
-            console.log(error.response)
-            console.log(error.response.status)
-            console.log(error.response.headers)
-              this.setState({
-                errorText:'An error ocurred saving your order data!'
-            }); 
-          }
-        })
-  }
-  
-   clearData(){
-    this.setState = {
+   clearData() {
+    this.setState({
       books: [],
       quantities:{},
       totalAmount: 0,
@@ -127,8 +141,8 @@ export default class Checkout extends Component {//for integration with Stripe p
       address: "",
       city: "",
       postalCode: ""
-    };
-    //Empty the shopping cart that was kept in the local storage but don't erase the authorization token
+    });
+    //empty the shopping cart that was kept in the local storage but don't erase the authorization token
     
     for (let key in localStorage){
       if (key === 'token') {
@@ -137,15 +151,15 @@ export default class Checkout extends Component {//for integration with Stripe p
       }else{   
         localStorage.removeItem(key);
       }
-    } 
+    }
   }
 
   handleChange(event){  
     this.setState({
-        [event.target.name]: event.target.value, //For all the inputs
-        errorText:"" //Cleans the previous error
+        [event.target.name]: event.target.value, //for all the inputs
+        errorText:"" //cleans the previous error
     });
-}
+  }
 render(){
   return (
   <div className='form-wrapper'>
@@ -163,7 +177,7 @@ render(){
           </ul>
       </div>
         <p style={{color:'#ff6341', fontSize:'1.2em'}}>{this.state.errorText}</p>
-          <form className= 'form-wrapper-inputs' onSubmit={(event) => this.submitOrder(event, this.state.books, this.state.quantities)}>
+          <form className= 'form-wrapper-inputs' onSubmit={(event) => this.sendOrderData(event)}>
               <label htmlFor='full-name'>Name and surname: </label>
               <input type='text' 
                 name='fullName' 

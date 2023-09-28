@@ -65,7 +65,11 @@ export default class App extends Component {
 
   authorizedRoutes(token){
     return[ //not to access via the navigation bar if the user is not logged in
-      <Route key={"successfulPaymentPage"} path="/successful-payment" component ={SuccessfulPayment}/>,
+      <Route key={"successfulPaymentPage"} path="/successful-payment/" render={(props) => (
+        <SuccessfulPayment
+        token={token}
+        {...props}/>
+      )}/>,
       <Route key={"ordersPage"} path="/orders" render={(props) => (
         <Orders
         token={token}

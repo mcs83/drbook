@@ -17,7 +17,7 @@ export default class SignUp extends Component {
 
     handleSubmitSignUp(event){
         axios
-        .post('http://localhost:5000/signup', //adds a new user and redirects the user to the login page
+        .post('https://mcs83.pythonanywhere.com/signup', //adds a new user and redirects the user to the login page
             {   email: this.state.email,
                 password: this.state.password
             },

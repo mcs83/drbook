@@ -9,7 +9,7 @@ function Logout(props) {
 
   function logOut() {
     axios
-    .post("http://localhost:5000/logout")
+    .post("https://mcs83.pythonanywhere.com/logout")
     .then((response) => {
        props.removeToken();//via props from app.js
        history.push("/");

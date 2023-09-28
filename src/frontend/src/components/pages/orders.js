@@ -8,7 +8,8 @@ export default class Orders extends Component {
         super(props);
         this.state = {
             orders: [],
-            books:[]
+            books:[],
+            errorText:''
         };
         this.requestOrdersHistory= this.requestOrdersHistory.bind(this);
         this.displayDate= this.displayDate.bind(this);
@@ -28,7 +29,7 @@ export default class Orders extends Component {
     requestOrdersHistory(){  
         axios({
             method: "GET",
-            url:"http://localhost:5000/orders/history",
+            url:"https://mcs83.pythonanywhere.com/orders-history",
             headers: { //authentication information must be sent like this for JWT token aknowledgement
               Authorization: 'Bearer ' + this.props.token
             } 
@@ -44,6 +45,9 @@ export default class Orders extends Component {
               console.log(error.response)
               console.log(error.response.status)
               console.log(error.response.headers)
+              this.setState({
+                errorText: 'Error loading data'
+              });
             }
           })
     }
@@ -53,6 +57,7 @@ render(){
         <div className='page-wrapper'>
           <div className='page-text'>
             <h2>Your order history</h2>
+            <p style={{color:'#ff6341', fontSize:'1.2em'}}>{this.state.errorText}</p>
           <ul>
              {this.state.orders.map((order, index) => (
              <li key={order.id}>

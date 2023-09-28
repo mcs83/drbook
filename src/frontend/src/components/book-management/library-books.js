@@ -16,7 +16,7 @@ export default class LibraryBooks extends Component {
     }
     getAllBooks(){ //gets all the books from API
         axios
-        .get("http://localhost:5000/books")
+        .get("https://mcs83.pythonanywhere.com/books")
         .then(response => {
           this.setState({
             data: response.data

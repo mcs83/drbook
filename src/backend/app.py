@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------IMPORTS---------------------------------------------------------------------------------------
 import json
-from flask import Flask, request, jsonify, session, make_response, redirect
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_ , DateTime
 from sqlalchemy import JSON as JSON_SQLite
@@ -25,8 +25,8 @@ app.config['SESSION_COOKIE_SECURE'] = True  # activates Secure for HTTPS
 Session(app)
 jwt = JWTManager(app)
 
-# Configure CORS to allow connection from localhost:3000 and 4000
-CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "http://localhost:4000"], "supports_credentials": True}})
+# Configure CORS to allow connection from localhost:3000 and the application in Netlify
+CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "https://dr-book.netlify.app"], "supports_credentials": True}})
 
 #------------------------------------------------------------------------DATABASES-----------------------------------------------------------------------------------
 #SQLlite database creation
@@ -35,7 +35,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+os.path.join(basedir, 'app.
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 migrate = Migrate(app, db)
-
 #------------------------------Creation of he database table 1: BOOKS IN DrBook
 
 class Book(db.Model): #Table 1: Books, each book has this structure:
@@ -280,7 +279,7 @@ def delete_user(id):
 def add_order():
     user_id = (User.query.filter_by(email=get_jwt_identity()).first()).id # Filter DB by token (email)
     quantity = request.json['quantity']
-    date = datetime.now()
+    date = datetime.now(timezone.utc)
     full_name = request.json['full_name']
     address = request.json['address']
     city = request.json['city']
@@ -329,7 +328,7 @@ def create_stripe_payment_link():
             payment_link = stripe.PaymentLink.create(
                 line_items = data['line_items'], 
                 shipping_options =[{"shipping_rate": 'shr_1NqAwdLqgY1TI3sm7mcKdTHP'}],#flat rate: 5$
-                after_completion={"type": "redirect", "redirect": {"url": "http://localhost:3000/successful-payment"}},#after payment, that page is loaded
+                after_completion={"type": "redirect", "redirect": {"url": "https://dr-book.netlify.app/successful-payment"}},#after payment, that page is loaded
             )
             return payment_link.url, 200
         else:
@@ -337,6 +336,23 @@ def create_stripe_payment_link():
  
   except Exception as e:
         return jsonify({'error': str(e)}), 500
+  
+# Endpoint to handle Stripe notifications
+@app.route('/stripe-webhook', methods=['POST'])
+def stripe_webhook():
+    payload = request.data
+    sig_header = request.headers.get('Stripe-Signature')
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, 'whsec_DAiTTi6Tayc67p4fH5Y3wGsyhddlw7xW' #webhook secret key
+        )
+        # The event has been successfully verified
+        if event['type'] == 'checkout.session.completed':
+            return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
 
 #------------------------------
 

@@ -49,7 +49,7 @@ export default class MoodCheckbox extends Component {
     } else {
       const queryString = selectedMoods.join('&');//joins in there are multiple queries: mood=sad&mood=frustrated
       axios
-        .get(`http://localhost:5000/select?${queryString}`)// example: http://localhost:5000/select?mood=sad&mood=overwhelmed
+        .get(`https://mcs83.pythonanywhere.com/select?${queryString}`)// example: http://localhost:5000/select?mood=sad&mood=overwhelmed
         .then(response => {
           this.setState({
             data: response.data,

@@ -22,13 +22,13 @@ const NavigationComponent = props => {
             );
         }else if(route ==="/login"){
             return(
-                    <NavLink to={route} activeClassName="nav-link-active">{linkText}  
-                    <FontAwesomeIcon icon = "sign-in-alt"/>
-                    </NavLink>
+               
+                <NavLink to={route} activeClassName="nav-link-active">{linkText}  
+                <FontAwesomeIcon icon = "sign-in-alt"/>
+                </NavLink>
             );
         }else if(route ==="/logout"){
             return(
-                //<a onClick={handleSignOut}>Log out <FontAwesomeIcon icon = "sign-out-alt"/></a>
                 <Logout removeToken={props.removeToken} />
             );
         }else{
@@ -41,14 +41,20 @@ const NavigationComponent = props => {
 
     return (
         <div className = "nav-wrapper">
-            <div className='nav-logo'>
-            <NavLink to="/" activeClassName="nav-link-active"><img src={logo}/>
-                </NavLink>
+            <div className='nav-header'>
+                <div className='nav-logo'>
+                    <NavLink to="/" activeClassName="nav-link-active"><img src={logo}/>
+                    </NavLink>
+                </div>
+                <div className='nav-cart'>
+                    {dynamicLink("/shopping-cart", "Shopping cart")}
+                </div>
+                <div className='nav-auth'>
+                    {!props.token && props.token!=="" && props.token!== undefined? dynamicLink("/login", "Login ") : dynamicLink("/logout", "Logout ") }
+                </div>
             </div>
             <div className={`nav-items ${isOpen && "open"}`}>
                 {dynamicLink("/about-drbook", "About Dr. Book")}
-                {dynamicLink("/shopping-cart", "Shopping cart")}
-                {!props.token && props.token!=="" && props.token!== undefined? dynamicLink("/login", "Login ") : dynamicLink("/logout", "Logout ") }
                 {!props.token && props.token!=="" && props.token!== undefined? null : dynamicLink("/orders", "My orders")}
             </div>
             <div className={`nav-toggle ${isOpen && "open"}`} onClick={() => setIsOpen(!isOpen)}>

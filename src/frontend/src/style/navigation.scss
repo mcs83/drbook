@@ -5,14 +5,46 @@
     padding: 20px 40px;
     background-color: $light-yellow;
     cursor: pointer;
+    .nav-header{
+        display:flex;
+        justify-content: space-between;
+        align-items: center;
 
-    .nav-logo{
-       height:140px;
-        img{
-            width: 140px; 
-        }
-        &:hover {
-            filter: brightness(0.9);
+        .nav-logo{
+            height:140px;
+             img{
+                 width: 140px; 
+             }
+             &:hover {
+                 filter: brightness(0.9);
+             }
+         }
+         .nav-cart{
+             a{
+                 color: black;
+                 text-decoration: none;
+                 margin: 15px;
+                 &:hover {
+                     color:$orange;
+                     border-radius: 8px;
+                     background-color: white;
+                     padding: 10px;
+                     }
+                 }
+         } .nav-auth{
+            a{
+                color: black;
+                text-decoration: none;
+                margin: 15px;
+                &:hover {
+                    color:$orange;
+                    text-transform: uppercase;
+                    border-radius: 8px;
+                    background-color: white;
+                    padding: 10px;
+                    }
+                }
+    
         }
     }
     .nav-items{

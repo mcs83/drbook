@@ -1,13 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import bookCoverImagesUrlsArray from "./book-cover-images-urls";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export default function Book({ item, cartBooksCount}) {
    
+    const [isAddedToCart, setIsAddedToCart] = useState(false); //to display the "added to cart" message under the button
+    
     const addToCart = (book) => {
         const currentQuantity = getCurrentQuantity(book.id);
         localStorage.setItem(book.id, currentQuantity + 1);//storage of the book id and its quantity
         cartBooksCount();//refreshes the book quantities in the cart, to pass it to the cart icon in the navigation bar
+        setIsAddedToCart(true);
+        setTimeout(() => {
+            setIsAddedToCart(false);
+          }, 3000); //show the message during 3 seconds
         
       };
       const getCurrentQuantity = (id) => {
@@ -44,6 +50,7 @@ export default function Book({ item, cartBooksCount}) {
                 <div className="book-text-column-right">
                     <p className="price">$ {price}</p>
                     <button className="btn" onClick={() => addToCart(item) }>Add to the shopping cart</button>
+                    {isAddedToCart && <p style={{ color: "#f56241", fontSize: "1.4em"}}>Added to cart!</p>}
                 </div>
             </div>
         </div>
