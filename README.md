@@ -144,14 +144,13 @@ Images are stored in the `static/assets/images` directory, organized into folder
 |                       |                                    | - `books`: An object with information about each selected book, sourced from the API.                |
 |                       |                                    | - `quantities`: A JSON object where keys are book IDs and values are the quantities of each book requested. |
 |                       |                                    | - `token`: The JWT token for authentication (required for checkout).                                   |
-|                       | Checkout Form and Shipping Cost    | When a logged-in user proceeds to checkout, a form for entering shipping details is displayed.        |
-|                       |                                    | - Shipping cost is fixed at $5.                                                                      |
-|                       | Order Submission                   | Clicking the "Submit" button triggers the `submitOrder` function, which sends a secure payment link request to Stripe. |
-|                       |                                    | - The request includes encoded information about each book and its price from the Stripe database (a column in the `Book` table). |
-|                       | Error Handling                     | If the token has expired, an error message is displayed. If not, the user is redirected to the Stripe payment link, and the order is saved with `sendOrderData()`. |
+|                       | Order Submission                   | Clicking the "Submit" button first triggers the `sendOrderData` function to save the order with a "draft" status. Once the order is successfully saved, the `submitOrder` function is activated to send a secure payment link request to Stripe. |
+|                       |                                    | - Error Handling: If the token has expired, an error message is displayed. If not, the user is redirected to the Stripe payment link, and the order is saved with `sendOrderData()`. |
 |                       | Successful Payment                 | After a successful payment, Python redirects to the `successful-payment.js` component using the `after_completion` code: |
 |                       |                                    | - `{"type": "redirect", "redirect": {"url": "https://dr-book.netlify.app/successful-payment"}}`.   |
-| MY ORDERS             | Request Order History              | Users can request historical order information and shipping details via the `requestOrdersHistory()` function. |
+| MY ORDERS             | Request Order History              | Users can request historical order information and shipping details via the `requestOrdersHistory()` function. Only completed orders are displayed. |
+|                       |                                    | - The order status changes to "completed" upon reaching the `successful-payment.js` component. |
+
   
     
       
